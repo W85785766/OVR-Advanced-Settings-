@@ -1,4 +1,4 @@
-; OVR 一键工具 安装脚本（Inno Setup 6）
+﻿; OVR 一键工具 安装脚本（Inno Setup 6）
 ; 本地构建：iscc installer\ovras-toolkit.iss
 
 #define MyAppName "OVR 一键工具"
@@ -25,7 +25,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 LicenseFile=..\LICENSE
 
 [Languages]
-Name: "chinesesimp"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+Name: "chinesesimp"; MessagesFile: "{#SourcePath}\ChineseSimplified.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
