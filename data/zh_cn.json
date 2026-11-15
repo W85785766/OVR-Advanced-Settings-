@@ -1,0 +1,1002 @@
+{
+ "version": "5.8.17",
+ "source": "community translation for OVR Advanced Settings",
+ "pairs": [
+  [
+   "Reset",
+   "重置"
+  ],
+  [
+   "Delete Profile",
+   "删除配置"
+  ],
+  [
+   "Create New Profile",
+   "新建配置"
+  ],
+  [
+   "Apply",
+   "应用"
+  ],
+  [
+   "Standing",
+   "站立"
+  ],
+  [
+   "Toggle On/Off",
+   "开/关切换"
+  ],
+  [
+   "Activation Distance: ",
+   "激活距离: "
+  ],
+  [
+   "Name: ",
+   "名称: "
+  ],
+  [
+   "New Profile",
+   "新配置"
+  ],
+  [
+   "Sitting",
+   "坐姿"
+  ],
+  [
+   "Unknown(",
+   "未知("
+  ],
+  [
+   "Misc:",
+   "杂项:"
+  ],
+  [
+   "Toggle Override",
+   "切换覆盖"
+  ],
+  [
+   "Force Bounds",
+   "强制边界"
+  ],
+  [
+   "Red:",
+   "红:"
+  ],
+  [
+   "Green:",
+   "绿:"
+  ],
+  [
+   "Blue:",
+   "蓝:"
+  ],
+  [
+   "Do you really want to delete this profile?",
+   "确定要删除此配置吗？"
+  ],
+  [
+   "Tracking Universe:",
+   "追踪坐标系:"
+  ],
+  [
+   "Profile:",
+   "配置:"
+  ],
+  [
+   "ERROR: Empty profile name.",
+   "错误：配置名不能为空。"
+  ],
+  [
+   "HMD Rotations:",
+   "HMD 旋转:"
+  ],
+  [
+   "Dropped Frames:",
+   "掉帧:"
+  ],
+  [
+   "Reprojected Frames:",
+   "重投影帧:"
+  ],
+  [
+   "Timed Out:",
+   "超时:"
+  ],
+  [
+   "Reprojection Ratio:",
+   "重投影比例:"
+  ],
+  [
+   "ERROR: No name given.",
+   "错误：未输入名称。"
+  ],
+  [
+   "Chaperone Style",
+   "防护墙样式"
+  ],
+  [
+   "Chaperone Color",
+   "防护墙颜色"
+  ],
+  [
+   "Proximity Warning Settings",
+   "接近警告设置"
+  ],
+  [
+   "Additional Chaperone Settings",
+   "额外防护墙设置"
+  ],
+  [
+   "Dense",
+   "密集"
+  ],
+  [
+   "Med",
+   "中等"
+  ],
+  [
+   "Squares",
+   "方格"
+  ],
+  [
+   "Sparse",
+   "稀疏"
+  ],
+  [
+   "Floor Only",
+   "仅地面"
+  ],
+  [
+   "Ok",
+   "确定"
+  ],
+  [
+   "On",
+   "开"
+  ],
+  [
+   "Left Hand",
+   "左手"
+  ],
+  [
+   "Right Hand",
+   "右手"
+  ],
+  [
+   "Comfort Mode:",
+   "舒适模式:"
+  ],
+  [
+   "Device Pairing Information",
+   "设备配对信息"
+  ],
+  [
+   "Brightness:",
+   "亮度:"
+  ],
+  [
+   "Chaperone Proximity Warning Settings",
+   "防护墙接近警告设置"
+  ],
+  [
+   "Please choose a color",
+   "请选择颜色"
+  ],
+  [
+   "Switch to Beginner Mode",
+   "切换到新手模式"
+  ],
+  [
+   "Trigger Haptic Feedback",
+   "触发触觉反馈"
+  ],
+  [
+   "Audio Warning",
+   "音频警告"
+  ],
+  [
+   "Loop Audio",
+   "循环音频"
+  ],
+  [
+   "Adjust Volume",
+   "调节音量"
+  ],
+  [
+   "Open Dashboard",
+   "打开仪表盘"
+  ],
+  [
+   "Space Fix",
+   "空间修复"
+  ],
+  [
+   "Place one controller on the ground and ensure good visibility to the base stations.",
+   "将一个手柄放在地面上，并确保基站能清楚看到它。"
+  ],
+  [
+   "(Disabled in 'Seated' Universe Type)",
+   "(在“坐姿”坐标系下禁用)"
+  ],
+  [
+   "Status Text",
+   "状态文本"
+  ],
+  [
+   "Fix Floor",
+   "修正地面"
+  ],
+  [
+   "Recenter Space",
+   "重新居中空间"
+  ],
+  [
+   "Undo Fix",
+   "撤销修正"
+  ],
+  [
+   "Apply Space Settings Offsets as Center",
+   "将空间设置偏移设为中心"
+  ],
+  [
+   "Revert All Changes from This Session",
+   "撤销本次会话的所有更改"
+  ],
+  [
+   "Space Offsets",
+   "空间偏移"
+  ],
+  [
+   "Move Space",
+   "移动空间"
+  ],
+  [
+   "X-Axis (Left/Right):",
+   "X 轴 (左/右):"
+  ],
+  [
+   "Lock X",
+   "锁定 X"
+  ],
+  [
+   "Y-Axis (Down/Up):",
+   "Y 轴 (下/上):"
+  ],
+  [
+   "Lock Y",
+   "锁定 Y"
+  ],
+  [
+   "Z-Axis (Forth/Back):",
+   "Z 轴 (前/后):"
+  ],
+  [
+   "Lock Z",
+   "锁定 Z"
+  ],
+  [
+   "Rotate Space",
+   "旋转空间"
+  ],
+  [
+   "Log Matrices",
+   "记录矩阵"
+  ],
+  [
+   "Re-center",
+   "重新居中"
+  ],
+  [
+   "   Chaperone",
+   "   防护墙"
+  ],
+  [
+   "   Offsets",
+   "   偏移"
+  ],
+  [
+   "   Motion",
+   "   移动"
+  ],
+  [
+   "   Rotation",
+   "   旋转"
+  ],
+  [
+   "   Space Fix",
+   "   空间修复"
+  ],
+  [
+   "   Audio",
+   "   音频"
+  ],
+  [
+   "   Video",
+   "   视频"
+  ],
+  [
+   "   Utilities",
+   "   实用工具"
+  ],
+  [
+   "   Statistics",
+   "   统计"
+  ],
+  [
+   "   Bindings",
+   "   绑定"
+  ],
+  [
+   "   Settings",
+   "   设置"
+  ],
+  [
+   "Video Profile:",
+   "视频配置:"
+  ],
+  [
+   "Chaperone Profile:",
+   "防护墙配置:"
+  ],
+  [
+   "Unknown",
+   "未知"
+  ],
+  [
+   "Microphone:",
+   "麦克风:"
+  ],
+  [
+   "Push-to-Talk",
+   "按键说话"
+  ],
+  [
+   "Application Settings",
+   "应用设置"
+  ],
+  [
+   "Application Volume:",
+   "应用音量:"
+  ],
+  [
+   "Autostart",
+   "开机自启"
+  ],
+  [
+   "Desktop Mode (restart required)",
+   "桌面模式（需重启）"
+  ],
+  [
+   "Universe-Centered Rotation (Disables HMD Centering)",
+   "以坐标系为中心旋转（禁用头显居中）"
+  ],
+  [
+   "Enable Automatic Crash Recovery of Chaperone Config",
+   "启用防护墙配置的自动崩溃恢复"
+  ],
+  [
+   "Disable Notification of Newer Version Availability",
+   "禁用新版本可用通知"
+  ],
+  [
+   "Force Use SteamVR Chaperone (experimental + SteamVR restart required)",
+   "强制使用 SteamVR 防护墙（实验性，需重启 SteamVR）"
+  ],
+  [
+   "Auto Apply Chaperone Profile:",
+   "自动应用防护墙配置:"
+  ],
+  [
+   "Select",
+   "选择"
+  ],
+  [
+   "Force Use SteamVR (Disable Oculus API [experimental])",
+   "强制使用 SteamVR（禁用 Oculus API [实验性]）"
+  ],
+  [
+   "Exclusive Input Toggle (This enables Key Binding to Toggle state)",
+   "独占输入切换（启用后可用按键绑定切换状态）"
+  ],
+  [
+   "Disable App Vsync",
+   "禁用应用垂直同步"
+  ],
+  [
+   "Custom Tick Rate: ",
+   "自定义刷新率: "
+  ],
+  [
+   "Debug State: ",
+   "调试状态: "
+  ],
+  [
+   "Shutdown OVRAS",
+   "关闭 OVRAS"
+  ],
+  [
+   "Debug",
+   "调试"
+  ],
+  [
+   "Statistics",
+   "统计"
+  ],
+  [
+   "HMD Distance Moved:",
+   "HMD 移动距离:"
+  ],
+  [
+   "Left Controller Max Speed:",
+   "左手柄最高速度:"
+  ],
+  [
+   "Right Controller Max Speed:",
+   "右手柄最高速度:"
+  ],
+  [
+   "Presented Frames:",
+   "呈现帧数:"
+  ],
+  [
+   "Audio Settings",
+   "音频设置"
+  ],
+  [
+   "Audio Device: ",
+   "音频设备: "
+  ],
+  [
+   "Microphone: ",
+   "麦克风: "
+  ],
+  [
+   "Microphone Volume:",
+   "麦克风音量:"
+  ],
+  [
+   "Mirror Device: ",
+   "镜像设备: "
+  ],
+  [
+   "Mirror Volume:",
+   "镜像音量:"
+  ],
+  [
+   "Do you really want to delete this audio profile?",
+   "确定要删除此音频配置吗？"
+  ],
+  [
+   "Create New Audio Profile",
+   "新建音频配置"
+  ],
+  [
+   "Make Default",
+   "设为默认"
+  ],
+  [
+   "Audio Profile:",
+   "音频配置:"
+  ],
+  [
+   "Change the Push To Talk settings",
+   "修改“按键说话”设置"
+  ],
+  [
+   "\\t\\tin the SteamVR bindings menu.",
+   "\\t\\t在 SteamVR 绑定菜单中。"
+  ],
+  [
+   "Proximity Sensor Mutes/Unmutes Microphone",
+   "接近传感器静音/取消静音麦克风"
+  ],
+  [
+   "Push-to-Talk:",
+   "按键说话:"
+  ],
+  [
+   "Show notification in HMD",
+   "在头显中显示通知"
+  ],
+  [
+   "Push-to-Mute",
+   "按键静音"
+  ],
+  [
+   "Chaperone Settings",
+   "防护墙设置"
+  ],
+  [
+   "What to include:",
+   "包含内容:"
+  ],
+  [
+   "Chaperone Geometry",
+   "防护墙几何体"
+  ],
+  [
+   "Visibility Setting",
+   "可见性设置"
+  ],
+  [
+   "Fade Distance Setting",
+   "淡出距离设置"
+  ],
+  [
+   "Center Marker Setting",
+   "中心标记设置"
+  ],
+  [
+   "Play Space Marker Setting",
+   "游玩空间标记设置"
+  ],
+  [
+   "Floor Bounds Always On Setting",
+   "地面边界常开设置"
+  ],
+  [
+   "Force Bounds Setting",
+   "强制边界设置"
+  ],
+  [
+   "Visibility:",
+   "可见性:"
+  ],
+  [
+   "Fade Distance:",
+   "淡出距离:"
+  ],
+  [
+   "Height:",
+   "高度:"
+  ],
+  [
+   "Center Marker",
+   "中心标记"
+  ],
+  [
+   "Play Space",
+   "游玩空间"
+  ],
+  [
+   "Disable Chaperone",
+   "禁用防护墙"
+  ],
+  [
+   "Reload from Disk",
+   "从磁盘重新加载"
+  ],
+  [
+   "ERROR: Nothing included.",
+   "错误：未选择任何内容。"
+  ],
+  [
+   "ERROR: Offsets not reset.",
+   "错误：偏移未重置。"
+  ],
+  [
+   "Rotate Orientation (permanent)",
+   "旋转朝向（永久）"
+  ],
+  [
+   "Disable chaperone below height: ",
+   "低于此高度时禁用防护墙: "
+  ],
+  [
+   "Floor Bounds Always On",
+   "地面边界常开"
+  ],
+  [
+   "Legacy Center Marker",
+   "旧版中心标记"
+  ],
+  [
+   "Reset Turn Counter",
+   "重置转身计数"
+  ],
+  [
+   "MISSING HEADER TEXT",
+   "缺少标题文本"
+  ],
+  [
+   "Cancel",
+   "取消"
+  ],
+  [
+   "Header Title",
+   "标题"
+  ],
+  [
+   "Content",
+   "内容"
+  ],
+  [
+   "Motion Settings",
+   "移动设置"
+  ],
+  [
+   "Gravity Settings",
+   "重力设置"
+  ],
+  [
+   "Gravity Strength (+ is down):",
+   "重力强度（正值为向下）:"
+  ],
+  [
+   "Moon",
+   "月球"
+  ],
+  [
+   "Mars",
+   "火星"
+  ],
+  [
+   "Earth",
+   "地球"
+  ],
+  [
+   "Jupiter",
+   "木星"
+  ],
+  [
+   "Save Momentum",
+   "保存动量"
+  ],
+  [
+   "Friction:",
+   "摩擦:"
+  ],
+  [
+   "Fling Strength:",
+   "甩动强度:"
+  ],
+  [
+   "Height Toggle / Gravity Floor Offset",
+   "高度切换 / 重力地面偏移"
+  ],
+  [
+   "Height Offset (+ is down):",
+   "高度偏移（正值为向下）:"
+  ],
+  [
+   "Set From Y-Offset",
+   "从 Y 偏移设置"
+  ],
+  [
+   "Space Drag",
+   "空间拖拽"
+  ],
+  [
+   "Drag Multiplier:",
+   "拖拽倍率:"
+  ],
+  [
+   "Rotation Settings",
+   "旋转设置"
+  ],
+  [
+   "Auto-Turn (for discrete redirected walking)",
+   "自动转身（用于离散式重定向行走）"
+  ],
+  [
+   "HMD Icon",
+   "HMD 图标"
+  ],
+  [
+   "Activation Dist:",
+   "激活距离:"
+  ],
+  [
+   "Use Corner Angle",
+   "使用转角角度"
+  ],
+  [
+   "Deactivation Dist:",
+   "失活距离:"
+  ],
+  [
+   "Use Smooth Turn",
+   "使用平滑转身"
+  ],
+  [
+   "Turn Speed(deg/sec):",
+   "转身速度(度/秒):"
+  ],
+  [
+   "Detangle Angle: ",
+   "解缠角度: "
+  ],
+  [
+   "Min Rotations:",
+   "最小旋转圈数:"
+  ],
+  [
+   "Max Wall Angle: ",
+   "最大墙壁角度: "
+  ],
+  [
+   "Vestibular Motion (for continuous redirected walking)",
+   "前庭运动（用于连续式重定向行走）"
+  ],
+  [
+   "Imperceptable",
+   "难以察觉"
+  ],
+  [
+   "Light",
+   "轻微"
+  ],
+  [
+   "Strong",
+   "强烈"
+  ],
+  [
+   "Extreme",
+   "极端"
+  ],
+  [
+   "Radius: ",
+   "半径: "
+  ],
+  [
+   "Snap Turn Angle:",
+   "快速转身角度:"
+  ],
+  [
+   "Smooth Turn Rate:",
+   "平滑转身速率:"
+  ],
+  [
+   "Space Turn (for manual redirected walking)",
+   "空间转身（用于手动重定向行走）"
+  ],
+  [
+   "View Ratchetting",
+   "视角棘轮旋转"
+  ],
+  [
+   "Restart SteamVR",
+   "重启 SteamVR"
+  ],
+  [
+   "Camera: (requires SteamVR restart)",
+   "摄像头:（需重启 SteamVR）"
+  ],
+  [
+   "Enable Camera",
+   "启用摄像头"
+  ],
+  [
+   "Show camera on bounds collision",
+   "碰撞边界时显示摄像头"
+  ],
+  [
+   "Show camera on controller",
+   "在手柄上显示摄像头"
+  ],
+  [
+   "Status: ",
+   "状态: "
+  ],
+  [
+   "Ready to Pair",
+   "可配对"
+  ],
+  [
+   "dongles used: ",
+   "已用接收器: "
+  ],
+  [
+   "Refresh Device List",
+   "刷新设备列表"
+  ],
+  [
+   "Instructions: Set Device to pairing mode and then hit pair on desired un-connected Dongle. To pair to a currently used dongle turn-off the attached device and refresh the list",
+   "说明：将设备设为配对模式，然后在所需未连接的接收器上点击配对。若要配对到正在使用的接收器，请先关闭已连接的设备并刷新列表"
+  ],
+  [
+   "Device: ",
+   "设备: "
+  ],
+  [
+   "Device ID: ",
+   "设备 ID: "
+  ],
+  [
+   "Connected Dongle Type: ",
+   "已连接接收器类型: "
+  ],
+  [
+   "Pair",
+   "配对"
+  ],
+  [
+   "Dongle ID: ",
+   "接收器 ID: "
+  ],
+  [
+   "Binds:",
+   "绑定:"
+  ],
+  [
+   "Enable Per-App",
+   "启用按应用设置"
+  ],
+  [
+   "Application: ",
+   "应用: "
+  ],
+  [
+   "Open Bindings",
+   "打开绑定"
+  ],
+  [
+   "Save Current Binding of Selected App: ",
+   "保存所选应用的当前绑定: "
+  ],
+  [
+   "For Current Game",
+   "仅当前游戏"
+  ],
+  [
+   "As Default",
+   "作为默认"
+  ],
+  [
+   "Enable Timing Overlay",
+   "启用计时叠加层"
+  ],
+  [
+   "Require HMD",
+   "需要头显"
+  ],
+  [
+   "No Fade to Grid",
+   "不淡出到网格"
+  ],
+  [
+   "Allow Multiple Drivers",
+   "允许多个驱动"
+  ],
+  [
+   "Enable System Button Binding",
+   "启用系统键绑定"
+  ],
+  [
+   "Disable Notifications",
+   "禁用通知"
+  ],
+  [
+   "Controller Power Turns on SteamVR",
+   "手柄开机时启动 SteamVR"
+  ],
+  [
+   "Utilities",
+   "实用工具"
+  ],
+  [
+   "Alarm Clock",
+   "闹钟"
+  ],
+  [
+   "Alarm",
+   "闹钟提醒"
+  ],
+  [
+   "Current Time",
+   "当前时间"
+  ],
+  [
+   "+1 Hour",
+   "+1 小时"
+  ],
+  [
+   "-1 Hour",
+   "-1 小时"
+  ],
+  [
+   "+5 Min",
+   "+5 分钟"
+  ],
+  [
+   "-5 Min",
+   "-5 分钟"
+  ],
+  [
+   "Keyboard Utilities",
+   "键盘工具"
+  ],
+  [
+   "Send to active application: ",
+   "发送到当前活动应用: "
+  ],
+  [
+   "Keyboard Input",
+   "键盘输入"
+  ],
+  [
+   "Enter",
+   "回车"
+  ],
+  [
+   "Backspace",
+   "退格"
+  ],
+  [
+   "10x Backspace",
+   "退格 ×10"
+  ],
+  [
+   "Custom Key 1",
+   "自定义键 1"
+  ],
+  [
+   "Custom Key 2",
+   "自定义键 2"
+  ],
+  [
+   "Custom Key 3",
+   "自定义键 3"
+  ],
+  [
+   "Media Control Keys",
+   "媒体控制键"
+  ],
+  [
+   "Show Tracker Batteries",
+   "显示追踪器电量"
+  ],
+  [
+   "Video Settings",
+   "视频设置"
+  ],
+  [
+   "Brightness",
+   "亮度"
+  ],
+  [
+   "Color Adjustment",
+   "颜色调整"
+  ],
+  [
+   "Do you really want to delete this video profile?",
+   "确定要删除此视频配置吗？"
+  ],
+  [
+   "Create New Video Profile",
+   "新建视频配置"
+  ],
+  [
+   "Motion Smoothing",
+   "运动平滑"
+  ],
+  [
+   "Advanced SS Filtering",
+   "高级超采样过滤"
+  ],
+  [
+   "Use Overlay For Color",
+   "使用叠加层调整颜色"
+  ],
+  [
+   "Brightness and Color (via overlay)",
+   "亮度与颜色（通过叠加层）"
+  ],
+  [
+   "Opacity:",
+   "不透明度:"
+  ],
+  [
+   "Video Profiles:",
+   "视频配置:"
+  ],
+  [
+   "Profile:  ",
+   "配置:  "
+  ],
+  [
+   "SuperSampling: (may require refresh of dashboard or restart of SteamVR)",
+   "超采样:（可能需要刷新仪表盘或重启 SteamVR）"
+  ]
+ ]
+}

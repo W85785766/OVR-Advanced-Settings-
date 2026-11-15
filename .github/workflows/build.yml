@@ -1,0 +1,56 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build portable exe
+        run: >
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name "OVR一键工具"
+          --icon docs/icon.ico
+          --add-data "data;data"
+          ovras_toolkit.py
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\ovras-toolkit.iss
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ovras-toolkit-windows
+          path: |
+            dist/OVR一键工具.exe
+            dist/OVR一键工具-Setup.exe
+          if-no-files-found: error
+
+      - name: Publish release (tag only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/OVR一键工具.exe
+            dist/OVR一键工具-Setup.exe
+          generate_release_notes: true
