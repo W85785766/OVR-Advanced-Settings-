@@ -4,7 +4,7 @@
 #define MyAppName "OVR 一键工具"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "OVRAS Toolkit"
-#define MyAppExeName "OVR一键工具.exe"
+#define MyAppExeName "OVR-Toolkit.exe"
 
 [Setup]
 AppId={{7C3E9B2A-4F51-4C8D-9E2B-6A1D5F0C8E31}
@@ -15,7 +15,7 @@ DefaultDirName={autopf}\OVR Toolkit
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\dist
-OutputBaseFilename=OVR一键工具-Setup
+OutputBaseFilename=OVR-Toolkit-Setup
 SetupIconFile=..\docs\icon.ico
 Compression=lzma2
 SolidCompression=yes
@@ -32,7 +32,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\dist\OVR一键工具.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\OVR-Toolkit.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 

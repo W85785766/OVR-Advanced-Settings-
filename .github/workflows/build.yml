@@ -25,7 +25,7 @@ jobs:
       - name: Build portable exe
         run: >
           pyinstaller --noconfirm --clean --onefile --windowed
-          --name "OVR一键工具"
+          --name "OVR-Toolkit"
           --icon docs/icon.ico
           --add-data "data;data"
           ovras_toolkit.py
@@ -42,8 +42,8 @@ jobs:
         with:
           name: ovras-toolkit-windows
           path: |
-            dist/OVR一键工具.exe
-            dist/OVR一键工具-Setup.exe
+            dist/OVR-Toolkit.exe
+            dist/OVR-Toolkit-Setup.exe
           if-no-files-found: error
 
       - name: Publish release (tag only)
@@ -51,6 +51,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/OVR一键工具.exe
-            dist/OVR一键工具-Setup.exe
+            dist/OVR-Toolkit.exe
+            dist/OVR-Toolkit-Setup.exe
           generate_release_notes: true
