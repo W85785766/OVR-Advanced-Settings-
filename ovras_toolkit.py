@@ -20,6 +20,12 @@ OVR 一键工具 (OVRAS Toolkit)
    把 OVRAS 的 QML 界面文本替换为简体中文（内置 249 条对照表），
    自动备份英文原版，可随时一键还原。
 
+4. 修复 SteamVR「绑定」页白屏
+   SteamVR 2.18.x 的绑定页（controllerbindingui.js）在「该应用没有用户
+   自定义绑定」时会读到 null 而抛 TypeError，整页渲染中断变成空白，
+   而且崩掉的页面不会自动重载。本工具给那段代码补上空值保护，并在没有
+   自定义绑定时回落到应用自带的默认绑定。修改会自动备份，可一键还原。
+
 只依赖 Python 标准库。解压 7z 需要 7-Zip，找不到时会自动下载 7zr.exe。
 
 用法：
@@ -30,7 +36,9 @@ OVR 一键工具 (OVRAS Toolkit)
     python ovras_toolkit.py install    # 下载并安装 OVRAS 到 --dir（默认读配置）
     python ovras_toolkit.py localize   # 汉化已安装的 OVRAS
     python ovras_toolkit.py revert     # 还原英文界面
-    python ovras_toolkit.py all        # 安装 + 汉化 + 修复仪表盘
+    python ovras_toolkit.py bindfix    # 修复 SteamVR「绑定」页白屏
+    python ovras_toolkit.py bindrevert # 还原「绑定」页原始文件
+    python ovras_toolkit.py all        # 安装 + 汉化 + 修复仪表盘 + 修复绑定页
 
 许可证：MIT
 """
@@ -48,7 +56,7 @@ import time
 import urllib.request
 
 APP_NAME = "OVR 一键工具"
-APP_VER = "1.0.0"
+APP_VER = "1.1.0"
 if getattr(sys, "frozen", False):  # PyInstaller 打包后
     EXE_DIR = os.path.dirname(sys.executable)
     DATA_DIR = os.path.join(getattr(sys, "_MEIPASS", EXE_DIR), "data")
@@ -355,6 +363,125 @@ def restore_dashboard():
     return True
 
 
+# ---------------------------------------------------------------- 绑定页白屏
+
+BINDING_UI_REL = os.path.join("resources", "webinterface", "dashboard",
+                              "controllerbindingui.js")
+
+# 【1】没有用户自定义绑定时 SteamVR 给出 current_binding_url = null，
+#     原版直接 .hasOwnProperty() 会抛 TypeError，整页白屏。
+BINDING_OLD1 = (
+    "null==this.m_sLoadedBindingURI&&t.current_binding_url.hasOwnProperty("
+    "this.m_sSelectedControllerType)&&(this.m_sLoadedBindingURI="
+    "t.current_binding_url[this.m_sSelectedControllerType])")
+BINDING_NEW1 = (
+    "null==this.m_sLoadedBindingURI&&(t.current_binding_url&&"
+    "t.current_binding_url.hasOwnProperty(this.m_sSelectedControllerType)"
+    "?this.m_sLoadedBindingURI=t.current_binding_url[this.m_sSelectedControllerType]"
+    ":t.default_bindings&&t.default_bindings[this.m_sSelectedControllerType]&&"
+    "(this.m_sLoadedBindingURI=t.default_bindings[this.m_sSelectedControllerType]))")
+# 【2】action_sets 为 null 时的同类崩溃
+BINDING_OLD2 = (
+    "null==this.m_sSelectedActionSet||!this.m_SelectedAppActions.action_sets."
+    "hasOwnProperty(this.m_sSelectedActionSet)")
+BINDING_NEW2 = (
+    "null==this.m_sSelectedActionSet||!this.m_SelectedAppActions.action_sets||"
+    "!this.m_SelectedAppActions.action_sets.hasOwnProperty("
+    "this.m_sSelectedActionSet)")
+BINDING_MARK = "t.current_binding_url&&t.current_binding_url.hasOwnProperty"
+
+
+def steamvr_dir():
+    """返回 SteamVR 安装目录。"""
+    for lib in steam_libraries():
+        d = os.path.join(lib, "steamapps", "common", "SteamVR")
+        if os.path.isdir(d):
+            return os.path.normpath(d)
+    return None
+
+
+def binding_ui_path():
+    d = steamvr_dir()
+    if not d:
+        return None
+    p = os.path.join(d, BINDING_UI_REL)
+    return p if os.path.isfile(p) else None
+
+
+def binding_patch_state():
+    """返回 (状态文字, 文件路径)。"""
+    p = binding_ui_path()
+    if not p:
+        return "未找到 SteamVR", None
+    try:
+        with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
+            text = f.read()
+    except OSError as e:
+        return "读取失败: %s" % e, p
+    if BINDING_MARK in text:
+        return "已修复", p
+    if BINDING_OLD1 in text:
+        return "未修复（建议修复）", p
+    return "代码版本未知（可能已升级）", p
+
+
+def fix_binding_page(dry_run=False):
+    """给 SteamVR 绑定页补上空值保护，修掉白屏。"""
+    p = binding_ui_path()
+    if not p:
+        log("[错误] 没有找到 SteamVR 的绑定页文件，请确认 SteamVR 已安装。")
+        return False
+    with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
+        text = f.read()
+    log("[文件] %s" % p)
+    if BINDING_MARK in text:
+        log("[跳过] 已经修复过了，无需重复操作。")
+        return True
+    if BINDING_OLD1 not in text:
+        log("[提示] 没找到预期代码，SteamVR 版本可能不同，未做任何修改。")
+        return False
+
+    new = text.replace(BINDING_OLD1, BINDING_NEW1, 1)
+    if BINDING_OLD2 in new:
+        new = new.replace(BINDING_OLD2, BINDING_NEW2, 1)
+        log("[加固] 同时给 action_sets 加上空值判断")
+    if dry_run:
+        log("[预演] 将替换 1 处（+%d 字符），未写入。" % (len(new) - len(text)))
+        return True
+
+    bk = backup_file(p)
+    log("[备份] %s" % bk)
+    with open(p, "w", encoding="utf-8", errors="surrogateescape", newline="") as f:
+        f.write(new)
+
+    with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
+        check = f.read()
+    if BINDING_MARK not in check:
+        log("[错误] 写入后校验失败，请用「还原绑定页」恢复。")
+        return False
+    log("[完成] 已修补绑定页（%d -> %d 字符）。" % (len(text), len(check)))
+    log("[提示] 回到 SteamVR 重新打开「绑定」页即可生效，不需要重启 SteamVR。")
+    log("       若仍空白，退出 SteamVR 再启动一次。")
+    return True
+
+
+def revert_binding_page():
+    p = binding_ui_path()
+    if not p:
+        log("[错误] 没有找到 SteamVR 的绑定页文件。")
+        return False
+    backups = list_backups(p)
+    if not backups:
+        log("[错误] 没有找到备份文件，无法还原。")
+        return False
+    src = backups[0]
+    backup_file(p)
+    shutil.copy2(src, p)
+    log("[完成] 已用 %s 还原绑定页。" % os.path.basename(src))
+    log("[提示] 重新打开「绑定」页生效；若仍空白，重启一次 SteamVR。")
+    return True
+
+
 def show_status():
     log("== 环境 ==")
     steam = find_steam()
@@ -375,6 +502,10 @@ def show_status():
             log("  解析失败: %s" % e)
     log("SteamVR 运行: %s" % ("是（修改前请退出）" if steamvr_running() else "否"))
     log("备份数量   : %d" % (len(list_backups(path)) if path else 0))
+    state, bpath = binding_patch_state()
+    log("绑定页修复 : %s" % state)
+    if bpath:
+        log("绑定页文件 : %s" % bpath)
 
     log("== OVRAS ==")
     d = suggest_install_dir(cfg)
@@ -672,7 +803,7 @@ def run_gui():  # pragma: no cover
     head.pack(fill="x", padx=12, pady=(10, 0))
     tk.Label(head, text="%s" % APP_NAME,
              font=("Microsoft YaHei UI", 15, "bold")).pack(anchor="w")
-    tk.Label(head, text="OVR Advanced Settings 一键汉化 · SteamVR 仪表盘修复（NOLO X1 等老设备）",
+    tk.Label(head, text="OVR Advanced Settings 一键汉化 · SteamVR 仪表盘 / 绑定页修复（NOLO X1 等老设备）",
              fg="#666666").pack(anchor="w")
 
     top = tk.Frame(root)
@@ -758,6 +889,18 @@ def run_gui():  # pragma: no cover
         if messagebox.askokcancel("还原英文", "把界面还原成英文？"):
             worker("还原英文界面", lambda: revert_english(dir_var.get()))
 
+    def task_bindfix():
+        if messagebox.askokcancel(
+                "修复绑定页",
+                "给 SteamVR 的绑定页打空值保护补丁（修白屏）。\n"
+                "修改前会自动备份，可随时还原。\n"
+                "SteamVR 运行中也能执行，重开「绑定」页即生效。\n继续？"):
+            worker("修复 SteamVR 绑定页", fix_binding_page)
+
+    def task_bindrevert():
+        if messagebox.askokcancel("还原绑定页", "用最近一次备份还原 SteamVR 绑定页文件？"):
+            worker("还原 SteamVR 绑定页", revert_binding_page)
+
     def task_all():
         def seq():
             if not install_ovras(dir_var.get()):
@@ -768,29 +911,32 @@ def run_gui():  # pragma: no cover
                 log("[提示] SteamVR 正在运行，仪表盘修复已跳过。退出后点「修复仪表盘」即可。")
             else:
                 fix_dashboard(force=False)
+            fix_binding_page()
 
         if not pick_dir_if_needed():
             return
         if messagebox.askokcancel(
                 "一键全部",
-                "将依次执行：\n  1) 下载并安装 OVRAS\n  2) 汉化\n  3) 修复 SteamVR 仪表盘（SteamVR 需已退出）\n继续？"):
+                "将依次执行：\n  1) 下载并安装 OVRAS\n  2) 汉化\n"
+                "  3) 修复 SteamVR 仪表盘（SteamVR 需已退出）\n"
+                "  4) 修复 SteamVR 绑定页白屏\n继续？"):
             worker("一键全部", seq)
 
     bar = tk.Frame(root)
-    bar.pack(fill="x", padx=10, pady=8)
-    buttons = [
-        ("检测状态", task_status),
-        ("修复仪表盘", task_fix),
-        ("还原配置", task_restore),
-        ("安装 OVRAS", task_install),
-        ("一键汉化", task_localize),
-        ("还原英文", task_revert),
-        ("一键全部", task_all),
+    bar.pack(fill="x", padx=10, pady=(8, 0))
+    rows = [
+        [("检测状态", task_status), ("修复仪表盘", task_fix), ("还原配置", task_restore),
+         ("修复绑定页", task_bindfix), ("还原绑定页", task_bindrevert)],
+        [("安装 OVRAS", task_install), ("一键汉化", task_localize),
+         ("还原英文", task_revert), ("一键全部", task_all)],
     ]
-    for text, fn in buttons:
-        ttk.Button(bar, text=text, command=fn).pack(side="left", padx=3, ipadx=6, ipady=3)
+    for row in rows:
+        line = tk.Frame(bar)
+        line.pack(fill="x", pady=2)
+        for text, fn in row:
+            ttk.Button(line, text=text, command=fn).pack(side="left", padx=3, ipadx=6, ipady=3)
 
-    ui_log("提示：修复仪表盘前请先退出 SteamVR；安装 / 汉化不需要退出。")
+    ui_log("提示：修复仪表盘前请先退出 SteamVR；安装 / 汉化 / 修复绑定页不需要退出。")
     ui_log("第一次使用请确认上面的「OVRAS 安装目录」是否正确，不确定就点「浏览…」选择。")
     ui_log("")
     root.mainloop()
@@ -805,7 +951,8 @@ def main(argv=None):
         description="%s v%s —— SteamVR 仪表盘修复 + OVRAS 安装/汉化" % (APP_NAME, APP_VER))
     parser.add_argument("command", nargs="?", default="gui",
                         choices=["gui", "status", "fix", "restore", "install",
-                                 "localize", "revert", "backup", "register", "all"])
+                                 "localize", "revert", "backup", "register",
+                                 "bindfix", "bindrevert", "all"])
     parser.add_argument("--dir", help="OVRAS 安装目录")
     parser.add_argument("--archive", help="使用本地 7z 安装包（离线安装）")
     parser.add_argument("--force", action="store_true", help="SteamVR 运行中也强行修改")
@@ -821,6 +968,10 @@ def main(argv=None):
         return 0 if fix_dashboard(force=args.force) else 1
     elif args.command == "restore":
         return 0 if restore_dashboard() else 1
+    elif args.command == "bindfix":
+        return 0 if fix_binding_page(dry_run=args.dry_run) else 1
+    elif args.command == "bindrevert":
+        return 0 if revert_binding_page() else 1
     elif args.command == "install":
         return 0 if install_ovras(args.dir, args.archive, not args.no_register) else 1
     elif args.command == "register":
@@ -844,6 +995,7 @@ def main(argv=None):
                 log("[提示] SteamVR 正在运行，仪表盘修复已跳过。")
             else:
                 fix_dashboard(force=args.force)
+            fix_binding_page()
         return 0 if ok else 1
     return 0
 
