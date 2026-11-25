@@ -24,7 +24,8 @@ OVR 一键工具 (OVRAS Toolkit)
    SteamVR 2.18.x 的绑定页（controllerbindingui.js）在「该应用没有用户
    自定义绑定」时会读到 null 而抛 TypeError，整页渲染中断变成空白，
    而且崩掉的页面不会自动重载。本工具给那段代码补上空值保护，并在没有
-   自定义绑定时回落到应用自带的默认绑定。修改会自动备份，可一键还原。
+   自定义绑定时回落到应用自带的默认绑定；同时更新页面的脚本哈希，
+   避免浏览器继续使用缓存里的旧脚本。修改会自动备份，可一键还原。
 
 只依赖 Python 标准库。解压 7z 需要 7-Zip，找不到时会自动下载 7zr.exe。
 
@@ -44,6 +45,7 @@ OVR 一键工具 (OVRAS Toolkit)
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -56,7 +58,7 @@ import time
 import urllib.request
 
 APP_NAME = "OVR 一键工具"
-APP_VER = "1.1.0"
+APP_VER = "1.1.1"
 if getattr(sys, "frozen", False):  # PyInstaller 打包后
     EXE_DIR = os.path.dirname(sys.executable)
     DATA_DIR = os.path.join(getattr(sys, "_MEIPASS", EXE_DIR), "data")
@@ -365,8 +367,9 @@ def restore_dashboard():
 
 # ---------------------------------------------------------------- 绑定页白屏
 
-BINDING_UI_REL = os.path.join("resources", "webinterface", "dashboard",
-                              "controllerbindingui.js")
+BINDING_DASH_REL = os.path.join("resources", "webinterface", "dashboard")
+BINDING_UI_REL = os.path.join(BINDING_DASH_REL, "controllerbindingui.js")
+BINDING_HTML_REL = os.path.join(BINDING_DASH_REL, "controllerbinding.html")
 
 # 【1】没有用户自定义绑定时 SteamVR 给出 current_binding_url = null，
 #     原版直接 .hasOwnProperty() 会抛 TypeError，整页白屏。
@@ -390,6 +393,32 @@ BINDING_NEW2 = (
     "this.m_sSelectedActionSet)")
 BINDING_MARK = "t.current_binding_url&&t.current_binding_url.hasOwnProperty"
 
+# 【3】真正的元凶（NOLO 这类设备必中）：
+#     SteamVR 要显示「控制器类型的中文名」时会去查驱动的本地化字符串表，
+#     而 NOLO 驱动没有字符串表 → m_InputState.localization 为 null，
+#     LocalizeDriverString() 里的 .hasOwnProperty() 直接抛 TypeError，
+#     React 渲染中断，整页空白（页面先闪一下再变黑）。
+#     补丁：查不到字符串表就回退原文。
+BINDING_CHUNK_MARK = "this.m_InputState.localization&&this.m_InputState.localization.hasOwnProperty"
+BINDING_CHUNK_PAIRS = [
+    (
+        "this.m_InputState&&this.m_InputState.localization.hasOwnProperty(e)&&"
+        "this.m_InputState.localization[e].hasOwnProperty(t.toLowerCase())",
+        "this.m_InputState&&this.m_InputState.localization&&"
+        "this.m_InputState.localization.hasOwnProperty(e)&&"
+        "this.m_InputState.localization[e]&&"
+        "this.m_InputState.localization[e].hasOwnProperty(t.toLowerCase())",
+    ),
+    (
+        "e&&this.m_InputState&&this.m_InputState.localization.hasOwnProperty(e.resource_root)&&"
+        "this.m_InputState.localization[e.resource_root].hasOwnProperty(t.toLowerCase())",
+        "e&&this.m_InputState&&this.m_InputState.localization&&"
+        "this.m_InputState.localization.hasOwnProperty(e.resource_root)&&"
+        "this.m_InputState.localization[e.resource_root]&&"
+        "this.m_InputState.localization[e.resource_root].hasOwnProperty(t.toLowerCase())",
+    ),
+]
+
 
 def steamvr_dir():
     """返回 SteamVR 安装目录。"""
@@ -408,77 +437,247 @@ def binding_ui_path():
     return p if os.path.isfile(p) else None
 
 
+def binding_html_path():
+    d = steamvr_dir()
+    if not d:
+        return None
+    p = os.path.join(d, BINDING_HTML_REL)
+    return p if os.path.isfile(p) else None
+
+
+def _sha20(data):
+    return hashlib.sha1(data).hexdigest()[:20]
+
+
+def steamvr_htmlcache_dir():
+    local = os.environ.get("LOCALAPPDATA") or ""
+    return os.path.join(local, "SteamVR", "htmlcache") if local else None
+
+
+def clear_steamvr_htmlcache():
+    """清掉 vrwebhelper 的网页缓存，让改动后的脚本一定被重新加载。"""
+    d = steamvr_htmlcache_dir()
+    if not d or not os.path.isdir(d):
+        log("[提示] 没找到 SteamVR 网页缓存目录，跳过。")
+        return True
+    if steamvr_running():
+        log("[警告] SteamVR 正在运行，缓存文件可能被占用，可能清不干净。")
+        log("       建议先完全退出 SteamVR 再点一次「修复绑定页」。")
+    removed = 0
+    names = ("Cache", "Code Cache", "GPUCache", "DawnCache", "DawnGraphiteCache",
+             "DawnWebGPUCache", "GraphiteDawnCache", "GrShaderCache", "ShaderCache")
+    for base in (d, os.path.join(d, "Default")):
+        if not os.path.isdir(base):
+            continue
+        for name in names:
+            p = os.path.join(base, name)
+            if os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+                if not os.path.isdir(p):
+                    removed += 1
+    log("[完成] 已清理 SteamVR 网页缓存（%d 个目录）。" % removed)
+    return True
+
+
+BINDING_HTML_RE = re.compile(r"(controllerbindingui\.js\?contenthash=)([0-9a-f]{6,40})")
+
+
+def _read_text(p):
+    with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
+        return f.read()
+
+
+def _write_text(p, text):
+    with open(p, "w", encoding="utf-8", errors="surrogateescape", newline="") as f:
+        f.write(text)
+
+
+def binding_chunk_paths():
+    """返回 dashboard 里所有含 LocalizeDriverString 的 chunk 脚本。"""
+    d = steamvr_dir()
+    if not d:
+        return []
+    dash = os.path.join(d, BINDING_DASH_REL)
+    if not os.path.isdir(dash):
+        return []
+    out = []
+    for name in sorted(os.listdir(dash)):
+        if name.startswith("chunk~") and name.endswith(".js"):
+            p = os.path.join(dash, name)
+            try:
+                t = _read_text(p)
+            except OSError:
+                continue
+            if BINDING_CHUNK_MARK in t or any(old in t for old, _ in BINDING_CHUNK_PAIRS):
+                out.append(p)
+    return out
+
+
 def binding_patch_state():
     """返回 (状态文字, 文件路径)。"""
     p = binding_ui_path()
     if not p:
         return "未找到 SteamVR", None
     try:
-        with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
-            text = f.read()
+        text = _read_text(p)
     except OSError as e:
         return "读取失败: %s" % e, p
-    if BINDING_MARK in text:
+    if BINDING_MARK not in text:
+        if BINDING_OLD1 in text:
+            return "未修复（建议修复）", p
+        return "代码版本未知（可能已升级）", p
+    chunks = binding_chunk_paths()
+    if not chunks:
+        return "已修复（未找到驱动字符串表脚本）", p
+    ok = 0
+    for cp in chunks:
+        try:
+            if BINDING_CHUNK_MARK in _read_text(cp):
+                ok += 1
+        except OSError:
+            pass
+    if ok == len(chunks):
         return "已修复", p
-    if BINDING_OLD1 in text:
-        return "未修复（建议修复）", p
-    return "代码版本未知（可能已升级）", p
+    return "部分修复（建议再点一次修复）", p
 
 
 def fix_binding_page(dry_run=False):
-    """给 SteamVR 绑定页补上空值保护，修掉白屏。"""
-    p = binding_ui_path()
-    if not p:
+    """修掉 SteamVR「绑定」页白屏。
+
+    白屏有两个来源，都补上：
+      1. 应用没有用户自定义绑定时 current_binding_url 为 null；
+      2. 驱动（NOLO 等）没有本地化字符串表时 localization 为 null，
+         LocalizeDriverString() 里的 .hasOwnProperty() 抛 TypeError —— 主因。
+    另外 SteamVR 的 controllerbinding.html 里写死了脚本的 contenthash，
+    浏览器按 URL 缓存，只改 JS 不换哈希等于没改，所以这里一并更新哈希
+    并清理网页缓存。
+    """
+    js = binding_ui_path()
+    if not js:
         log("[错误] 没有找到 SteamVR 的绑定页文件，请确认 SteamVR 已安装。")
         return False
-    with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
-        text = f.read()
-    log("[文件] %s" % p)
+
+    plans = []          # [(path, new_text, changed)]
+    total_changed = 0
+
+    # ---- 1) controllerbindingui.js ----
+    text = _read_text(js)
     if BINDING_MARK in text:
-        log("[跳过] 已经修复过了，无需重复操作。")
-        return True
-    if BINDING_OLD1 not in text:
-        log("[提示] 没找到预期代码，SteamVR 版本可能不同，未做任何修改。")
-        return False
+        log("[跳过] 绑定页脚本已经修补过。")
+        plans.append((js, text, False))
+    elif BINDING_OLD1 in text:
+        new = text.replace(BINDING_OLD1, BINDING_NEW1, 1)
+        if BINDING_OLD2 in new:
+            new = new.replace(BINDING_OLD2, BINDING_NEW2, 1)
+            log("[加固] 同时给 action_sets 加上空值判断")
+        log("[文件] %s" % js)
+        plans.append((js, new, True))
+        total_changed += 1
+    else:
+        log("[警告] %s 里没找到预期代码，可能 SteamVR 已升级。"
+            % os.path.basename(js))
 
-    new = text.replace(BINDING_OLD1, BINDING_NEW1, 1)
-    if BINDING_OLD2 in new:
-        new = new.replace(BINDING_OLD2, BINDING_NEW2, 1)
-        log("[加固] 同时给 action_sets 加上空值判断")
+    # ---- 2) chunk 脚本：驱动字符串表空值保护（白屏主因）----
+    chunks = binding_chunk_paths()
+    if not chunks:
+        log("[警告] 没找到含 LocalizeDriverString 的脚本，跳过该处修复。")
+    for cp in chunks:
+        ctext = _read_text(cp)
+        if BINDING_CHUNK_MARK in ctext:
+            log("[跳过] %s 已修补过。" % os.path.basename(cp))
+            plans.append((cp, ctext, False))
+            continue
+        new = ctext
+        hits = 0
+        for old, rep in BINDING_CHUNK_PAIRS:
+            if old in new:
+                new = new.replace(old, rep)
+                hits += 1
+        if hits:
+            log("[文件] %s（驱动字符串表空值保护 %d 处）"
+                % (os.path.basename(cp), hits))
+            plans.append((cp, new, True))
+            total_changed += 1
+        else:
+            log("[警告] %s 里没找到 LocalizeDriverString，跳过。"
+                % os.path.basename(cp))
+
+    if not total_changed:
+        log("[提示] 相关脚本都已修补过，无需修改。")
+        if not dry_run:
+            clear_steamvr_htmlcache()
+        return True
+
+    # ---- 3) 更新 html 里的 contenthash ----
+    html = binding_html_path()
+    html_text = None
+    html_fixed = None
+    if not html:
+        log("[警告] 没找到 controllerbinding.html，无法更新缓存哈希。")
+    else:
+        html_text = _read_text(html)
+        html_fixed = html_text
+        for p, new_text, changed in plans:
+            if not changed:
+                continue
+            name = os.path.basename(p)
+            nh = _sha20(new_text.encode("utf-8", "surrogateescape"))
+            pat = re.compile(re.escape(name) + r"\?contenthash=[0-9a-f]{6,40}")
+            html_fixed, n = pat.subn(name + "?contenthash=" + nh, html_fixed)
+            if n:
+                log("[哈希] %s -> %s（强制浏览器重新加载）" % (name, nh))
+            else:
+                log("[警告] 页面里找不到 %s 的引用，跳过哈希更新。" % name)
+    html_changed = html_fixed is not None and html_fixed != html_text
+
     if dry_run:
-        log("[预演] 将替换 1 处（+%d 字符），未写入。" % (len(new) - len(text)))
+        log("[预演] 需修改 %d 个脚本，页面哈希%s，未写入。"
+            % (total_changed, "需更新" if html_changed else "无需更新"))
         return True
 
-    bk = backup_file(p)
-    log("[备份] %s" % bk)
-    with open(p, "w", encoding="utf-8", errors="surrogateescape", newline="") as f:
-        f.write(new)
+    for p, new_text, changed in plans:
+        if not changed:
+            continue
+        log("[备份] %s" % backup_file(p))
+        _write_text(p, new_text)
+        if _read_text(p) != new_text:
+            log("[错误] 写入后校验失败，请用「还原绑定页」恢复。")
+            return False
+    if html_changed:
+        log("[备份] %s" % backup_file(html))
+        _write_text(html, html_fixed)
+        log("[完成] 已更新页面缓存哈希。")
 
-    with open(p, encoding="utf-8", errors="surrogateescape", newline="") as f:
-        check = f.read()
-    if BINDING_MARK not in check:
-        log("[错误] 写入后校验失败，请用「还原绑定页」恢复。")
-        return False
-    log("[完成] 已修补绑定页（%d -> %d 字符）。" % (len(text), len(check)))
-    log("[提示] 回到 SteamVR 重新打开「绑定」页即可生效，不需要重启 SteamVR。")
-    log("       若仍空白，退出 SteamVR 再启动一次。")
+    log("[完成] 已修补 %d 个脚本。" % total_changed)
+    clear_steamvr_htmlcache()
+    log("[提示] 完全退出 SteamVR 再启动一次，然后进仪表盘打开「绑定」。")
     return True
 
 
 def revert_binding_page():
-    p = binding_ui_path()
-    if not p:
-        log("[错误] 没有找到 SteamVR 的绑定页文件。")
+    targets = [(binding_ui_path(), "绑定页脚本")]
+    for cp in binding_chunk_paths():
+        targets.append((cp, "驱动字符串表脚本"))
+    targets.append((binding_html_path(), "绑定页页面"))
+    ok = False
+    for p, label in targets:
+        if not p:
+            continue
+        backups = list_backups(p)
+        if not backups:
+            log("[提示] %s（%s）没有备份，跳过。"
+                % (os.path.basename(p), label))
+            continue
+        src = backups[0]
+        backup_file(p)
+        shutil.copy2(src, p)
+        log("[完成] 已用 %s 还原 %s。" % (os.path.basename(src), label))
+        ok = True
+    if not ok:
+        log("[错误] 没有找到可还原的备份文件。")
         return False
-    backups = list_backups(p)
-    if not backups:
-        log("[错误] 没有找到备份文件，无法还原。")
-        return False
-    src = backups[0]
-    backup_file(p)
-    shutil.copy2(src, p)
-    log("[完成] 已用 %s 还原绑定页。" % os.path.basename(src))
-    log("[提示] 重新打开「绑定」页生效；若仍空白，重启一次 SteamVR。")
+    clear_steamvr_htmlcache()
+    log("[提示] 重启 SteamVR 后生效。")
     return True
 
 

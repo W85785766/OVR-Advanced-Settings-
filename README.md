@@ -39,27 +39,27 @@ NOLO 的串流套装、网吧预设、某些"优化脚本"会把 SteamVR 仪表�
 
 ### 3. 修复「绑定」页白屏
 
-> 症状：仪表盘里点 OVRAS 的「绑定」，弹出的却是**一整片空白**，一个字都没有。
+> 症状：仪表盘里点 OVRAS 的「绑定」，页面**亮一下（0.5 秒）就变成一整片空白**，一个字都没有。
 
-这不是汉化搞坏的，而是 SteamVR 2.18.x 绑定页自己的 bug（`controllerbindingui.js`）：
+这不是汉化搞坏的，而是 SteamVR 2.18.x 绑定页自己的 bug，触发点是**驱动没有本地化字符串表**（NOLO 这类小众设备必中）：
 
 ```js
-// ReloadCurrentApp() 先把已知绑定清空
-this.m_sLoadedBindingURI = void 0;
-yield this.LoadActionManifest();
-// 里面直接读 SteamVR 返回的 current_binding_url
-null == this.m_sLoadedBindingURI && t.current_binding_url.hasOwnProperty(...)
+// 页面要显示「控制器类型的中文名」，去查驱动的字符串表
+LocalizeDriverString(e, t) {
+  if (this.m_InputState && this.m_InputState.localization.hasOwnProperty(e) && ...)
+  //                       ^^^ NOLO 驱动没有字符串表 → localization 是 null
+}
 ```
 
-当这个应用**没有用户自定义绑定**（OVRAS、很多自制应用都是这样）时，SteamVR 返回的
-`current_binding_url` 是 `null`，于是抛
-`TypeError: Cannot read properties of null (reading 'hasOwnProperty')`，整页渲染中断 → 白屏。
-更麻烦的是崩掉的页面不会自动重载，之后每次看到都是那张白图。
+于是抛 `TypeError: Cannot read properties of null (reading 'hasOwnProperty')`，
+React 渲染中断 → HTML 首帧画完之后立刻变空白；而且崩掉的页面不会自动重载，之后每次打开都是白屏。
 
-工具会给这段加上空值保护，并在没有自定义绑定时**回落到应用自带的默认绑定**（也就是能直接看到并编辑按键表）：
+同一个页面还有第二处同类问题：应用**没有用户自定义绑定**时，`current_binding_url` 也是 `null`。
 
-- 修改前自动备份 `controllerbindingui.js`，点「还原绑定页」即可复原
-- SteamVR **运行中也能打补丁**，重开一次「绑定」页即可生效
+工具把两处都补上空值保护（查不到字符串表就回退显示原文，没有自定义绑定就回落到应用自带的默认绑定）：
+
+- 修改前自动备份，点「还原绑定页」即可复原
+- 同时更新 `controllerbinding.html` 里两个脚本的 `contenthash` 并清理 SteamVR 网页缓存——SteamVR 把哈希写死在页面里，只改 JS 不换哈希，浏览器会一直用缓存里的旧脚本，改了等于白改
 - 幂等：打过补丁的会跳过，不会重复改
 - SteamVR 升级后文件被覆盖属正常现象，重新点一次「修复绑定页」即可
 
@@ -163,6 +163,13 @@ iscc installer\ovras-toolkit.iss
 - 只在 Windows 上测试
 
 ## 更新日志
+
+### v1.1.1
+
+- 修复「绑定」页白屏的真正原因：**驱动没有本地化字符串表**（NOLO 这类小众设备）时，SteamVR 绑定页渲染控制器中文名会崩（`LocalizeDriverString` 空指针）。现在同时给 `LocalizeDriverString` / `LocalizeControllerString` 加空值保护，查不到就显示原文。
+- 补丁不再只改 `controllerbindingui.js`，会一并处理 `chunk~*.js` 里的驱动字符串表代码。
+- 自动识别被改脚本的哈希并同步改写 `controllerbinding.html`，同时清理 SteamVR 网页缓存（`%%LOCALAPPDATA%%\SteamVR\htmlcache`），确保浏览器真的加载新脚本。
+- 「还原绑定页」会同时还原 ui、chunk、html 三处备份。
 
 ### v1.1.0
 

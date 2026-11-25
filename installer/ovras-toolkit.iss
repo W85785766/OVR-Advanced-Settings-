@@ -1,8 +1,8 @@
-﻿; OVR 一键工具 安装脚本（Inno Setup 6）
+; OVR 一键工具 安装脚本（Inno Setup 6）
 ; 本地构建：iscc installer\ovras-toolkit.iss
 
 #define MyAppName "OVR 一键工具"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.1"
 #define MyAppPublisher "OVRAS Toolkit"
 #define MyAppExeName "OVR-Toolkit.exe"
 
